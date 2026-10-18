@@ -152,7 +152,10 @@ UNIT
   systemctl enable mybox
   systemctl restart mybox || systemctl start mybox
 
+  if [[ "$(readlink -f "$0")" != \
+      "$(readlink -f /usr/local/bin/mybox 2>/dev/null || true)" ]]; then
   install -m 755 "$0" /usr/local/bin/mybox
+fi
   echo "MyBox 安装完成。运行：mybox"
   "$BIN" version
 }
