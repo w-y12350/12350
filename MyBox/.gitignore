@@ -1,1 +1,11 @@
 
+.env
+*.key
+*.pem
+*.crt
+*.p12
+*.log
+*.bak
+config.json
+nodes.tsv
+*.tmp
