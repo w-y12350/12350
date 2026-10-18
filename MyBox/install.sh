@@ -4,30 +4,38 @@ set -Eeuo pipefail
 
 REPO="w-y12350/12350"
 BRANCH="main"
-INSTALL_DIR="/usr/local/bin"
+DEST="/usr/local/bin/mybox"
 
-if [[ "${EUID}" -ne 0 ]]; then
-  echo "请使用 root 权限运行，或使用 sudo。"
+if [[ "$EUID" -ne 0 ]]; then
+  echo "请使用 root 权限运行。"
   exit 1
 fi
 
-if ! command -v curl >/dev/null 2>&1; then
-  apt-get update
-  apt-get install -y curl
-fi
+. /etc/os-release
+case "${ID:-}" in
+  ubuntu|debian) ;;
+  *)
+    echo "MyBox 目前仅支持 Ubuntu / Debian。"
+    exit 1
+    ;;
+esac
 
-TMP_FILE="$(mktemp)"
-trap 'rm -f "$TMP_FILE"' EXIT
+apt-get update
+apt-get install -y curl ca-certificates
+
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
 
 URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/mybox.sh"
 
 echo "正在下载 MyBox..."
-curl -fL --retry 3 "$URL" -o "$TMP_FILE"
+curl -fLsS --retry 3 "$URL" -o "$TMP"
 
-bash -n "$TMP_FILE"
+echo "检查 Shell 语法..."
+bash -n "$TMP"
 
-install -m 0755 "$TMP_FILE" "${INSTALL_DIR}/mybox"
+install -m 755 "$TMP" "$DEST"
 
-echo "MyBox 管理脚本已安装。"
-echo "运行命令：mybox"
-
+echo "安装入口已准备好。"
+echo "正在初始化 sing-box..."
+"$DEST" install
